@@ -1,4 +1,4 @@
-'''
+"""
 Code for finding K Nearest Neighbors in a dataset.
 
 Please complete the function `calc_k_nearest_neighbors`
@@ -10,12 +10,13 @@ See test_knn.py for example inputs and expected outputs.
 To verify correctness of your implementation, you can execute:
 
 $ python -m doctest test_knn.py
-'''
+"""
 
 import numpy as np
 
+
 def calc_k_nearest_neighbors(data_NF, query_QF, K=1):
-    ''' Compute and return k-nearest neighbors under Euclidean distance
+    """Compute and return k-nearest neighbors under Euclidean distance
 
     Args
     ----
@@ -32,7 +33,7 @@ def calc_k_nearest_neighbors(data_NF, query_QF, K=1):
         Entry q,k is feature vector of k-th nearest neighbor of the q-th query
         If two vectors are equally close, then we break ties by taking the one
         appearing first in row order in the original data_NF array
-    '''
+    """
 
     # Unpack to get number of examples (N), features (F), and queries (Q)
     N, F = data_NF.shape
@@ -45,13 +46,19 @@ def calc_k_nearest_neighbors(data_NF, query_QF, K=1):
     if K > N:
         raise ValueError("Invalid number of neighbors (K). Too large.")
 
-    neighb_QKF = np.zeros((Q, K, F)) # placeholder to reserve the right shape
+    neighb_QKF = np.zeros((Q, K, F))  # placeholder to reserve the right shape
 
-    # HINT: review reductions, indexing, and argsort in day01 lab notebook.
+    for q in range(Q):
+        query_F = query_QF[q]
+        distances = np.zeros(N)
+        for n, data_F in enumerate(data_NF):
+            distance_F = query_F - data_F
+            distance_F = distance_F * distance_F
+            distance_1 = np.sqrt(np.sum(distance_F))
+            distances[n] = distance_1
 
-    # TODO: Solve k-nn problem from Q queries to N data vectors.
-    #       You might want a for loop over q from 0, 1, 2, ... Q-1.
-    #       At each q value, compute distances to all N neighbors
-    #                        then find the K closest neighbors
-    #                        then fill neighb_QKF with neighbors' features
-    return None
+        # stable sort so ties result in selection of first appearing feature
+        ids_NF = np.argsort(distances, kind="stable")
+        neighb_QKF[q] = data_NF[ids_NF[:K]]
+
+    return neighb_QKF
