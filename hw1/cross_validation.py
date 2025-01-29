@@ -1,4 +1,4 @@
-'''
+"""
 Test Cases Part 1
 -----------------
 # Focus: make_train_and_test_row_ids_for_n_fold_cv
@@ -64,16 +64,15 @@ Test Cases Part 2
 # because we've fit the true model well
 >>> np.array2string(err_te_K, precision=3, suppress_small=True)
 '[0. 0. 0. 0. 0. 0. 0.]'
-'''
+"""
 
 import numpy as np
 
-from performance_metrics import calc_root_mean_squared_error
-
 
 def train_models_and_calc_scores_for_n_fold_cv(
-        estimator, x_NF, y_N, n_folds=3, random_state=0):
-    ''' Perform n-fold cross validation for a specific sklearn estimator object
+    estimator, x_NF, y_N, n_folds=3, random_state=0
+):
+    """Perform n-fold cross validation for a specific sklearn estimator object
 
     Args
     ----
@@ -99,7 +98,7 @@ def train_models_and_calc_scores_for_n_fold_cv(
         One entry per fold
         Entry f gives the error computed for test set for fold f
 
-    '''
+    """
     train_error_per_fold = np.zeros(n_folds, dtype=np.float32)
     test_error_per_fold = np.zeros(n_folds, dtype=np.float32)
 
@@ -112,9 +111,8 @@ def train_models_and_calc_scores_for_n_fold_cv(
     return train_error_per_fold, test_error_per_fold
 
 
-def make_train_and_test_row_ids_for_n_fold_cv(
-        n_examples=0, n_folds=3, random_state=0):
-    ''' Divide row ids into train and test sets for n-fold cross validation.
+def make_train_and_test_row_ids_for_n_fold_cv(n_examples=0, n_folds=3, random_state=0):
+    """Divide row ids into train and test sets for n-fold cross validation.
 
     Will *shuffle* the row ids via a pseudorandom number generator before
     dividing into folds.
@@ -145,8 +143,8 @@ def make_train_and_test_row_ids_for_n_fold_cv(
     is equal to [0, 1, ... N-1]
     * The *intersection* of the two is the empty set
     * The total size of train and test ids for any fold is equal to N
-    '''
-    if hasattr(random_state, 'rand'):
+    """
+    if hasattr(random_state, "rand"):
         # Handle case where provided random_state is a random generator
         # (e.g. has methods rand() and randn())
         random_state = random_state  # just remind us we use the passed-in value
@@ -157,8 +155,12 @@ def make_train_and_test_row_ids_for_n_fold_cv(
     train_ids_per_fold = list()
     test_ids_per_fold = list()
 
+    N = len(n_examples)
+
     # TODO obtain a shuffled order of the n_examples
+    random_order = random_state.permutation(N)
     # TODO loop over folds, establish which indices belong each fold
+    
     # TODO assign those indices to the fold's test set
     # TODO assign remaining indices to the fold's train set
 
