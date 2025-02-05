@@ -67,6 +67,7 @@ Test Cases Part 2
 """
 
 import numpy as np
+from performance_metrics import calc_root_mean_squared_error
 
 
 def train_models_and_calc_scores_for_n_fold_cv(
@@ -99,14 +100,53 @@ def train_models_and_calc_scores_for_n_fold_cv(
         Entry f gives the error computed for test set for fold f
 
     """
+    N, F = x_NF.shape
+    assert (N,) == y_N.shape
     train_error_per_fold = np.zeros(n_folds, dtype=np.float32)
     test_error_per_fold = np.zeros(n_folds, dtype=np.float32)
 
-    # TODO define the folds here by calling your function
-    # e.g. ... = make_train_and_test_row_ids_for_n_fold_cv(...)
+    train_ids_per_fold, test_ids_per_fold = make_train_and_test_row_ids_for_n_fold_cv(
+        N, n_folds, random_state
+    )
 
-    # TODO loop over folds and compute the train and test error
-    # for the provided estimator
+    for f in range(n_folds):
+        # Gather training examples and response
+        # Let S be the number of training examples
+        x_SF = x_NF[train_ids_per_fold[f]]
+        y_S = y_N[train_ids_per_fold[f]]
+        (S1, F1) = x_SF.shape
+        (S2,) = y_S.shape
+        assert F1 == F
+        assert S1 == S2  # as many examples as outputs
+
+        estimator.fit(x_SF, y_S)
+
+        # Training fit
+        yhat_S = estimator.predict(x_SF)
+        (S3,) = yhat_S.shape
+        assert S3 == S2
+        # Gather test examples and response
+        # Let T be the number of test examples
+
+        x_TF = x_NF[test_ids_per_fold[f]]
+        y_T = y_N[test_ids_per_fold[f]]
+
+        (T1, F2) = x_TF.shape
+        (T2,) = y_T.shape
+        assert T1 == T2
+        assert F2 == F
+
+        # Test fit
+        yhat_T = estimator.predict(x_TF)
+        (T3,) = yhat_T.shape
+        assert T3 == T2
+
+        # Calculate errors
+        train_error = calc_root_mean_squared_error(y_S, yhat_S)
+        test_error = calc_root_mean_squared_error(y_T, yhat_T)
+
+        train_error_per_fold[f] = train_error
+        test_error_per_fold[f] = test_error
 
     return train_error_per_fold, test_error_per_fold
 
@@ -155,13 +195,39 @@ def make_train_and_test_row_ids_for_n_fold_cv(n_examples=0, n_folds=3, random_st
     train_ids_per_fold = list()
     test_ids_per_fold = list()
 
-    N = len(n_examples)
-
-    # TODO obtain a shuffled order of the n_examples
+    N = n_examples
     random_order = random_state.permutation(N)
-    # TODO loop over folds, establish which indices belong each fold
-    
-    # TODO assign those indices to the fold's test set
-    # TODO assign remaining indices to the fold's train set
+
+    test_start = 0
+    subset_size = n_examples // n_folds
+    for k in range(1, n_folds + 1):
+        if k == n_folds:
+            test_set = random_order[test_start:]
+            train_set = random_order[0:test_start]
+
+            assert len(test_set) + len(train_set) == N
+            assert len(np.intersect1d(test_set, train_set)) == 0
+            assert np.array_equal(
+                np.union1d(test_set, train_set), [n for n in range(N)]
+            )
+
+            train_ids_per_fold.append(train_set)
+            test_ids_per_fold.append(test_set)
+        else:
+            test_set = random_order[test_start : test_start + subset_size]
+
+            train_set = np.concatenate(
+                (random_order[0:test_start], random_order[test_start + subset_size :])
+            )
+            assert len(test_set) + len(train_set) == N
+            assert len(np.intersect1d(test_set, train_set)) == 0
+            assert np.array_equal(
+                np.union1d(test_set, train_set), [n for n in range(N)]
+            )
+
+            train_ids_per_fold.append(train_set)
+            test_ids_per_fold.append(test_set)
+
+        test_start += subset_size
 
     return train_ids_per_fold, test_ids_per_fold

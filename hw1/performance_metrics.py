@@ -48,8 +48,7 @@ def calc_root_mean_squared_error(y_N, yhat_N):
     assert y_N.ndim == 1
     assert y_N.shape == yhat_N.shape
     N = y_N.shape
-    res = np.sqrt(np.divide(np.sum(np.square(np.subtract(y_N, yhat_N))), N))[0]
-    return res
+    return np.sqrt(np.divide(np.sum(np.square(np.subtract(y_N, yhat_N))), N))[0]
 
 
 # Time taken : 10 minutes
