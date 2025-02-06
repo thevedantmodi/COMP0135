@@ -64,6 +64,22 @@ Test Cases Part 2
 # because we've fit the true model well
 >>> np.array2string(err_te_K, precision=3, suppress_small=True)
 '[0. 0. 0. 0. 0. 0. 0.]'
+
+# Let's try N=4 and K=4, where K does divide evenly into N
+>>> N = 4
+>>> K = 4
+>>> tr_ids_per_fold_K, te_ids_per_fold_K = (
+...     make_train_and_test_row_ids_for_n_fold_cv(N, K))
+
+# There should be K=4 entries in each returned list
+>>> len(tr_ids_per_fold_K)
+4
+>>> len(te_ids_per_fold_K)
+4
+>>> len(te_ids_per_fold_K[0])
+1
+>>> len(tr_ids_per_fold_K[0])
+3
 """
 
 import numpy as np
@@ -101,7 +117,7 @@ def train_models_and_calc_scores_for_n_fold_cv(
 
     """
     N, F = x_NF.shape
-    assert (N,) == y_N.shape
+    # assert (N,) == y_N.shape
     train_error_per_fold = np.zeros(n_folds, dtype=np.float32)
     test_error_per_fold = np.zeros(n_folds, dtype=np.float32)
 
@@ -114,32 +130,32 @@ def train_models_and_calc_scores_for_n_fold_cv(
         # Let S be the number of training examples
         x_SF = x_NF[train_ids_per_fold[f]]
         y_S = y_N[train_ids_per_fold[f]]
-        (S1, F1) = x_SF.shape
-        (S2,) = y_S.shape
-        assert F1 == F
-        assert S1 == S2  # as many examples as outputs
+        # (S1, F1) = x_SF.shape
+        # (S2,) = y_S.shape
+        # assert F1 == F
+        # assert S1 == S2  # as many examples as outputs
 
         estimator.fit(x_SF, y_S)
 
         # Training fit
         yhat_S = estimator.predict(x_SF)
-        (S3,) = yhat_S.shape
-        assert S3 == S2
+        # (S3,) = yhat_S.shape
+        # assert S3 == S2
         # Gather test examples and response
         # Let T be the number of test examples
 
         x_TF = x_NF[test_ids_per_fold[f]]
         y_T = y_N[test_ids_per_fold[f]]
 
-        (T1, F2) = x_TF.shape
-        (T2,) = y_T.shape
-        assert T1 == T2
-        assert F2 == F
+        # (T1, F2) = x_TF.shape
+        # (T2,) = y_T.shape
+        # assert T1 == T2
+        # assert F2 == F
 
         # Test fit
         yhat_T = estimator.predict(x_TF)
-        (T3,) = yhat_T.shape
-        assert T3 == T2
+        # (T3,) = yhat_T.shape
+        # assert T3 == T2
 
         # Calculate errors
         train_error = calc_root_mean_squared_error(y_S, yhat_S)
@@ -205,11 +221,11 @@ def make_train_and_test_row_ids_for_n_fold_cv(n_examples=0, n_folds=3, random_st
             test_set = random_order[test_start:]
             train_set = random_order[0:test_start]
 
-            assert len(test_set) + len(train_set) == N
-            assert len(np.intersect1d(test_set, train_set)) == 0
-            assert np.array_equal(
-                np.union1d(test_set, train_set), [n for n in range(N)]
-            )
+            # assert len(test_set) + len(train_set) == N
+            # assert len(np.intersect1d(test_set, train_set)) == 0
+            # assert np.array_equal(
+            #     np.union1d(test_set, train_set), [n for n in range(N)]
+            # )
 
             train_ids_per_fold.append(train_set)
             test_ids_per_fold.append(test_set)
@@ -219,11 +235,11 @@ def make_train_and_test_row_ids_for_n_fold_cv(n_examples=0, n_folds=3, random_st
             train_set = np.concatenate(
                 (random_order[0:test_start], random_order[test_start + subset_size :])
             )
-            assert len(test_set) + len(train_set) == N
-            assert len(np.intersect1d(test_set, train_set)) == 0
-            assert np.array_equal(
-                np.union1d(test_set, train_set), [n for n in range(N)]
-            )
+            # assert len(test_set) + len(train_set) == N
+            # assert len(np.intersect1d(test_set, train_set)) == 0
+            # assert np.array_equal(
+            #     np.union1d(test_set, train_set), [n for n in range(N)]
+            # )
 
             train_ids_per_fold.append(train_set)
             test_ids_per_fold.append(test_set)

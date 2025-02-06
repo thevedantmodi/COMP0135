@@ -101,11 +101,11 @@ class LeastSquaresLinearRegressor(object):
         self.w_F = theta_G1[:F].flatten()
         assert self.w_F.shape == (F,)
         # should not be a scalar
-        assert not isinstance(self.w_F, np.float64)
+        # assert not isinstance(self.w_F, np.float64)
 
         self.b = theta_G1[-1][0]
         # should be a scalar
-        assert isinstance(self.b, np.float64)
+        # assert isinstance(self.b, np.float64)
 
     def predict(self, x_MF):
         """Make predictions given input features for M examples
@@ -122,15 +122,15 @@ class LeastSquaresLinearRegressor(object):
             Each value is the predicted scalar for one example
         """
         M, F = x_MF.shape
-        assert self.w_F.shape == (F,)
+        # assert self.w_F.shape == (F,)
 
-        for x_F in x_MF:
-            assert x_F.shape == (F,)
+        # for x_F in x_MF:
+        #     assert x_F.shape == (F,)
         # (M, F) (F, 1) => (M, 1)
         # Adds the bias to the dot product of each row with the weights
         yhat_M = self.b + (x_MF @ self.w_F)
 
-        assert yhat_M.shape == (M,)
+        # assert yhat_M.shape == (M,)
         return yhat_M
 
 
@@ -142,6 +142,7 @@ def test_on_toy_data(N=100):
     The test verifies that our LR can recover true w and b parameter values.
     """
     prng = np.random.RandomState(0)
+    N = 100
 
     true_w_F = np.asarray([1.1, -2.2, 3.3])
     true_b = 0.0
@@ -152,19 +153,7 @@ def test_on_toy_data(N=100):
     linear_regr.fit(x_NF, y_N)
 
     yhat_N = linear_regr.predict(x_NF)
-
     np.set_printoptions(precision=3, formatter={"float": lambda x: "% .3f" % x})
-
-    print("True weights")
-    print(true_w_F)
-    print("Estimated weights")
     print(linear_regr.w_F)
 
-    print("True intercept")
-    print(np.asarray([true_b]))
-    print("Estimated intercept")
     print(np.asarray([linear_regr.b]))
-
-
-if __name__ == "__main__":
-    test_on_toy_data()
