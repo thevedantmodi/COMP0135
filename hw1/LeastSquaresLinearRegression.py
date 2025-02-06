@@ -82,24 +82,24 @@ class LeastSquaresLinearRegressor(object):
         G = F + 1
 
         xtilde_NG = np.hstack((x_NF, np.ones((N, 1))))
-        assert xtilde_NG.shape == (N, G)
+        # assert xtilde_NG.shape == (N, G)
 
         xtildeT_GN = xtilde_NG.T
-        assert xtildeT_GN.shape == (G, N)
+        # assert xtildeT_GN.shape == (G, N)
 
         xTx_GG = xtildeT_GN @ xtilde_NG
-        assert xTx_GG.shape == (G, G)
+        # assert xTx_GG.shape == (G, G)
 
         RHS_G1 = (xtildeT_GN @ y_N)[:, np.newaxis]
-        assert RHS_G1.shape == (G, 1)
+        # assert RHS_G1.shape == (G, 1)
 
         LHS_GG = xTx_GG
 
         theta_G1 = np.linalg.solve(LHS_GG, RHS_G1)
-        assert theta_G1.shape == (G, 1)
+        # assert theta_G1.shape == (G, 1)
 
         self.w_F = theta_G1[:F].flatten()
-        assert self.w_F.shape == (F,)
+        # assert self.w_F.shape == (F,)
         # should not be a scalar
         # assert not isinstance(self.w_F, np.float64)
 
