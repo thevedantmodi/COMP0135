@@ -1,4 +1,4 @@
-'''
+"""
 logsumexp.py
 
 Provides a numerically implementation of logsumexp function,
@@ -44,7 +44,7 @@ FloatingPointError: overflow encountered in exp
 True
 >>> print("%.5f" % (ans_that_wont_overflow))
 1002.40761
-'''
+"""
 
 import numpy as np
 
@@ -52,7 +52,7 @@ import numpy as np
 
 
 def my_logsumexp(scores_N):
-    ''' Compute logsumexp on provided array in numerically stable way.
+    """Compute logsumexp on provided array in numerically stable way.
 
     This function only handles 1D arrays.
     The equivalent scipy function can handle arrays of many dimensions.
@@ -66,11 +66,13 @@ def my_logsumexp(scores_N):
     -------
     ans : float
         Result of the logsumexp computation
-    '''
+    """
     scores_N = np.asarray(scores_N, dtype=np.float64)
 
     # See math on HW2 instructions page for the correct approach
-    m = 0.0  # TODO fix me: the maximum entry of the vector scores_N
-    logsumexp = 0.0  # TODO fix me: calc logsumexp in numerically stable way
+    m = np.max(scores_N)  # the maximum entry of the vector scores_N
+    logsumexp = m + np.log(
+        np.sum(np.exp(scores_N - m))
+    )  # calc logsumexp in numerically stable way
 
-    return None   # TODO fix me
+    return logsumexp

@@ -1,4 +1,4 @@
-'''
+"""
 proba_metrics.py
 
 Provides implementation of common metrics for assessing a binary classifier's
@@ -9,7 +9,7 @@ Compute binary cross entropy (BCE) from probability predictions.
 
 * `calc_mean_BCE_from_scores`
 Compute binary cross entropy (BCE) from scores.
-Scores here are the real-value inputs to sigmoid function. 
+Scores here are the real-value inputs to sigmoid function.
 Computing diretly from scores can be more numerically stable.
 
 
@@ -97,16 +97,15 @@ Test Cases for calc_mean_BCE_from_scores
 >>> empty_bce = calc_mean_BCE_from_scores([], [])
 >>> np.allclose(0.0, empty_bce)
 True
-'''
+"""
 
 import numpy as np
-
-from scipy.special import logsumexp as scipy_logsumexp
 from scipy.special import expit as sigmoid
+from scipy.special import logsumexp as scipy_logsumexp
 
 
 def calc_mean_BCE_from_probas(ytrue_N, yproba1_N):
-    ''' Compute average cross entropy for given binary classifier's predictions
+    """Compute average cross entropy for given binary classifier's predictions
 
     Consumes probabilities ("probas"), values between 0.0 and 1.0.
 
@@ -143,29 +142,32 @@ def calc_mean_BCE_from_probas(ytrue_N, yproba1_N):
     -------
     bce : float
         Binary cross entropy, averaged over all N provided examples
-    '''
+    """
     # Cast labels to integer just to be sure we're getting what's expected
     ytrue_N = np.asarray(ytrue_N, dtype=np.int32)
-    if ytrue_N.size > 0:
-        assert np.min(ytrue_N) >= 0
-        assert np.max(ytrue_N) <= 1
     N = int(ytrue_N.size)
+    if N == 0:
+        return 0.0
+    assert np.min(ytrue_N) >= 0
+    assert np.max(ytrue_N) <= 1
     # Cast probas to float and be sure we're between zero and one
-    yproba1_N = np.asarray(yproba1_N, dtype=np.float64)           # dont touch
-    yproba1_N = np.maximum(1e-14, np.minimum(1-1e-14, yproba1_N))  # dont touch
+    yproba1_N = np.asarray(yproba1_N, dtype=np.float64)  # dont touch
+    yproba1_N = np.maximum(1e-14, np.minimum(1 - 1e-14, yproba1_N))  # dont touch
 
-    # TODO compute BCE. Be sure to handle empty input lists properly
-    bce = 0.0  # TODO fix me
+    # compute BCE. Be sure to handle empty input lists properly
+    bce = np.mean(
+        -ytrue_N * np.log2(yproba1_N) - (1 - ytrue_N) * np.log2(1 - yproba1_N)
+    )
 
-    return None  # TODO fix me
+    return bce
 
 
 def calc_mean_BCE_from_scores(ytrue_N, scores_N):
-    ''' Compute average cross entropy given binary classifier's scores.
+    """Compute average cross entropy given binary classifier's scores.
 
     Consumes "scores", real values between (-np.inf, np.inf)
     This code computes the BCE directly from these scores,
-    conceptually doing the two steps of 
+    conceptually doing the two steps of
     (1) turning scores into probabilities via the logistic sigmoid
     (2) computing BCE from the probabilities in step 1.
 
@@ -174,7 +176,8 @@ def calc_mean_BCE_from_scores(ytrue_N, scores_N):
     to zero would become negative infinity). This clever implementation uses
     the "logsumexp" trick.
 
-    Computing BCE uses *base-2* logarithms, so the resulting number is a valid
+    Computing BCE uses *base-2* logarithms, so the resulting number is a validc
+
     upper bound of mean zero-one loss (aka error rate) when threshold = 0.5.
 
     Args
@@ -195,24 +198,29 @@ def calc_mean_BCE_from_scores(ytrue_N, scores_N):
     -------
     bce : float
         Binary cross entropy, averaged over all N provided examples
-    '''
+    """
     # Cast labels to integer just to be sure we're getting what's expected
     ytrue_N = np.asarray(ytrue_N, dtype=np.int32)
     N = int(ytrue_N.size)
+    if N == 0:
+        return 0.0
 
     # Convert binary y values so 0 becomes +1 and 1 becomes -1
     # See HW2 instructions on website for the math
-    yflipsign_N = -1 * np.sign(ytrue_N-0.001)  # dont touch
+    yflipsign_N = -1 * np.sign(ytrue_N - 0.001)  # dont touch
 
     # Cast logit scores to float
     scores_N = np.asarray(scores_N, dtype=np.float64)  # dont touch
 
-    flipped_scores_N = np.zeros(N)  # TODO fix me: flip(y_n) s_n
+    flipped_scores_N = yflipsign_N * scores_N
 
     # Next, stack up two arrays of shape (N,1) to form result of (N,2)
     # First column should be all zero
     # Second column should be flipped_scores_N
-    scores_and_zeros_N2 = np.zeros((N, 2))  # TODO fix me
+    scores_and_zeros_N2 = np.column_stack((np.zeros(N), flipped_scores_N))
+    assert (N, 2) == scores_and_zeros_N2.shape
+
+    sigmoid
 
     # Compute the ultimate BCE score
     # Use scipy_logsumexp from scipy (already imported)
@@ -220,7 +228,8 @@ def calc_mean_BCE_from_scores(ytrue_N, scores_N):
     # By using the 'axis' keyword argument, like:
     # >>> ans_A = scipy_logsumexp(in_AB, axis=1) # apply logsumexp to each row
     # >>> ans_B = scipy_logsumexp(in_AB, axis=0) # apply logsumexp to each col
+    # print(scores_and_zeros_N2)
 
-    bce_score = 0.0  # TODO fix me
+    bce_score = np.mean(scipy_logsumexp(scores_and_zeros_N2, axis=1) / np.log(2))
 
-    return None  # TODO fix me
+    return bce_score

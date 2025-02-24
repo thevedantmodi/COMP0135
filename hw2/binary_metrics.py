@@ -1,4 +1,4 @@
-'''
+"""
 calc_binary_metrics
 
 Provides implementation of common metrics for assessing a binary classifier's
@@ -6,7 +6,7 @@ hard decisions against true binary labels, including:
 * accuracy
 * true positive rate and true negative rate (TPR and TNR)
 
-Test Cases for calc_TP_TN_FP_FN 
+Test Cases for calc_TP_TN_FP_FN
 -------------------------------
 >>> N = 8
 >>> ytrue_N = np.asarray([0., 0., 0., 0., 1., 1., 1., 1.])
@@ -23,7 +23,7 @@ Test Cases for calc_TP_TN_FP_FN
 >>> np.allclose(TP + TN + FP + FN, N)
 True
 
-Test Cases for calc_ACC 
+Test Cases for calc_ACC
 -----------------------
 # Verify what happens with empty input
 >>> acc = calc_ACC([], [])
@@ -37,7 +37,7 @@ Test Cases for calc_ACC
 >>> print("%.3f" % acc)
 0.625
 
-Test Cases for calc_TPR 
+Test Cases for calc_TPR
 -----------------------
 # Verify what happens with empty input
 >>> empty_val = calc_TPR([], [])
@@ -51,7 +51,7 @@ Test Cases for calc_TPR
 >>> print("%.3f" % tpr)
 0.500
 
-Test Cases for calc_TNR 
+Test Cases for calc_TNR
 -----------------------
 # Verify what happens with empty input
 >>> empty_val = calc_TNR([], [])
@@ -65,13 +65,13 @@ Test Cases for calc_TNR
 >>> print("%.3f" % tnr)
 0.750
 
-'''
+"""
 
 import numpy as np
 
 
 def calc_TP_TN_FP_FN(ytrue_N, yhat_N):
-    ''' Count the four possible states of true and predicted binary values.
+    """Count the four possible states of true and predicted binary values.
 
     Args
     ----
@@ -95,21 +95,32 @@ def calc_TP_TN_FP_FN(ytrue_N, yhat_N):
         Number of false positives
     FN : int
         Number of false negatives
-    '''
+    """
     # Cast input to integer just to be sure we're getting what's expected
     ytrue_N = np.asarray(ytrue_N, dtype=np.int32)
     yhat_N = np.asarray(yhat_N, dtype=np.int32)
 
-    # TODO fix by calculating the number of true pos, true neg, etc.
-    TP = 0
-    TN = 0
-    FP = 0
-    FN = 0
-    return None  # TODO fix me
+    (N,) = ytrue_N.shape
+
+    TP, TN, FP, FN = 0, 0, 0, 0
+
+    for i in range(N):
+        if yhat_N[i] == 0:
+            if yhat_N[i] == ytrue_N[i]:  # yhat=0,y=0
+                TN += 1
+            else:  # yhat=0, y=1
+                FN += 1
+        else:  # yhat_N[i] == 1:
+            if yhat_N[i] == ytrue_N[i]:  # yhat=1,y=1
+                TP += 1
+            else:
+                FP += 1
+
+    return TP, TN, FP, FN
 
 
 def calc_ACC(ytrue_N, yhat_N):
-    ''' Compute the accuracy of provided predicted binary values.
+    """Compute the accuracy of provided predicted binary values.
 
     Args
     ----
@@ -127,16 +138,22 @@ def calc_ACC(ytrue_N, yhat_N):
     -------
     acc : float
         Accuracy = ratio of number correct over total number of examples
-    '''
-    # TODO compute accuracy
+    """
+    # compute accuracy
+    N = len(yhat_N)
+    N = N + 1e-10  # so that we don't have divide by 0
+
+    TP, TN, _, _ = calc_TP_TN_FP_FN(ytrue_N, yhat_N)
+
+    acc = (TP + TN) / N
     # You should *use* your calc_TP_TN_FP_FN function from above
     # Hint: make sure denominator will never be exactly zero
     # by adding a small value like 1e-10
-    return None  # TODO fix me
+    return acc
 
 
 def calc_TPR(ytrue_N, yhat_N):
-    ''' Compute the true positive rate of provided predicted binary values.
+    """Compute the true positive rate of provided predicted binary values.
 
     Also known as the recall.
 
@@ -156,16 +173,18 @@ def calc_TPR(ytrue_N, yhat_N):
     -------
     tpr : float
         TPR = ratio of true positives over total labeled positive
-    '''
-    # TODO compute TPR
+    """
+    # compute TPR
+    TP, _, _, FN = calc_TP_TN_FP_FN(ytrue_N, yhat_N)
+    denom = TP + FN + 1e-10
     # You should *use* your calc_TP_TN_FP_FN function from above
     # Hint: make sure denominator will never be exactly zero
     # by adding a small value like 1e-10
-    return None  # TODO fix me
+    return TP / denom
 
 
 def calc_TNR(ytrue_N, yhat_N):
-    ''' Compute the true negative rate of provided predicted binary values.
+    """Compute the true negative rate of provided predicted binary values.
 
     Args
     ----
@@ -183,9 +202,13 @@ def calc_TNR(ytrue_N, yhat_N):
     -------
     tnr : float
         TNR = ratio of true negatives over total labeled negative
-    '''
-    # TODO compute TNR
+    """
+
+    _, TN, FP, _ = calc_TP_TN_FP_FN(ytrue_N, yhat_N)
+
+    denom = FP + TN + 1e-10
+
     # You should *use* your calc_TP_TN_FP_FN function from above
     # Hint: make sure denominator will never be exactly zero
     # by adding a small value like 1e-10
-    return None  # TODO fix me
+    return TN / denom
